@@ -1,6 +1,6 @@
-'use strict'
+"use strict";
 
-const { ServiceProvider } = require('@adonisjs/fold')
+const { ServiceProvider } = require("@adonisjs/fold");
 
 class ServerSentEventsProvider extends ServiceProvider {
   /**
@@ -13,17 +13,17 @@ class ServerSentEventsProvider extends ServiceProvider {
    *
    * @private
    */
-  _registerEventStream () {
-    this.app.singleton('Adonis/Addon/EventStream', () => {
-      const Config = this.app.use('Adonis/Src/Config')
-      const Logger = this.app.use('Logger')
-      const EventStream = require('server-events-nodejs').EventStream
+  _registerEventStream() {
+    this.app.singleton("Adonis/Addon/EventStream", () => {
+      const Config = this.app.use("Adonis/Src/Config");
+      const Logger = this.app.use("Logger");
+      const EventStream = require("../libs/server-events-nodejs").EventStream;
 
-      let Stream = require('../src/Stream/index.js')
-      return new Stream(EventStream, Logger, Config)
-    })
+      let Stream = require("../src/Stream/index.js");
+      return new Stream(EventStream, Logger, Config);
+    });
 
-    this.app.alias('Adonis/Addon/EventStream', 'Stream')
+    this.app.alias("Adonis/Addon/EventStream", "Stream");
   }
 
   /**
@@ -39,13 +39,13 @@ class ServerSentEventsProvider extends ServiceProvider {
    *
    */
 
-  _registerEventSource () {
-    this.app.bind('Adonis/Src/EventSource', () => {
-      const Source = require('server-events-nodejs').Source
-      return new Source(require('uuid/v4'))
-    })
+  _registerEventSource() {
+    this.app.bind("Adonis/Src/EventSource", () => {
+      const Source = require("../libs/server-events-nodejs").Source;
+      return new Source(require("uuid/v4"));
+    });
 
-    this.app.alias('Adonis/Src/EventSource', 'Source')
+    this.app.alias("Adonis/Src/EventSource", "Source");
   }
 
   /**
@@ -55,14 +55,14 @@ class ServerSentEventsProvider extends ServiceProvider {
    *
    * @return {void}
    */
-  register () {
-    this._registerEventStream()
-    this._registerEventSource()
+  register() {
+    this._registerEventStream();
+    this._registerEventSource();
 
-    this.app.bind('Adonis/Middleware/EventSourceWatcher', (app) => {
-      let EventSourceWatcher = require('../src/Stream/Middleware/EventSourceWatcher.js')
-      return new EventSourceWatcher(this.app.use('Adonis/Addon/EventStream'))
-    })
+    this.app.bind("Adonis/Middleware/EventSourceWatcher", (app) => {
+      let EventSourceWatcher = require("../src/Stream/Middleware/EventSourceWatcher.js");
+      return new EventSourceWatcher(this.app.use("Adonis/Addon/EventStream"));
+    });
   }
 
   /**
@@ -72,20 +72,25 @@ class ServerSentEventsProvider extends ServiceProvider {
    *
    * @return {void}
    */
-  boot () {
-    const HttpContext = this.app.use('Adonis/Src/HttpContext')
-    const source = this.app.use('Adonis/Src/EventSource')
+  boot() {
+    const HttpContext = this.app.use("Adonis/Src/HttpContext");
+    const source = this.app.use("Adonis/Src/EventSource");
     /**
      * Adding getter to the HTTP context. Please note the queue
      * instance...
      */
-    HttpContext.getter('source', function () { // A NEW SOURCE INSTANCE ON EVERY REQUEST [HTTP]
-      if (this.request.method().toLowerCase() === 'get') {
-        return source
-      } else {
-        return { send: function () {} }
-      }
-    }, true)
+    HttpContext.getter(
+      "source",
+      function () {
+        // A NEW SOURCE INSTANCE ON EVERY REQUEST [HTTP]
+        if (this.request.method().toLowerCase() === "get") {
+          return source;
+        } else {
+          return { send: function () {} };
+        }
+      },
+      true
+    );
 
     /**
      * Since Websocket is optional, we need to wrap the use
@@ -94,16 +99,23 @@ class ServerSentEventsProvider extends ServiceProvider {
      * for them
      */
     try {
-      const WsContext = this.app.use('Adonis/Addons/WsContext')
-      WsContext.getter('source', function () { // A NEW SOURCE INSTANCE ON EVERY REQUEST [WS]
-        if ((this.request.header('Accept', '')).indexOf('text/event-stream') > -1) {
-          return source
-        } else {
-          return { send: function () {} }
-        }
-      }, true)
+      const WsContext = this.app.use("Adonis/Addons/WsContext");
+      WsContext.getter(
+        "source",
+        function () {
+          // A NEW SOURCE INSTANCE ON EVERY REQUEST [WS]
+          if (
+            this.request.header("Accept", "").indexOf("text/event-stream") > -1
+          ) {
+            return source;
+          } else {
+            return { send: function () {} };
+          }
+        },
+        true
+      );
     } catch (error) {}
   }
 }
 
-module.exports = ServerSentEventsProvider
+module.exports = ServerSentEventsProvider;
