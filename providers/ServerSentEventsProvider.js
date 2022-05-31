@@ -17,7 +17,7 @@ class ServerSentEventsProvider extends ServiceProvider {
     this.app.singleton("Adonis/Addon/EventStream", () => {
       const Config = this.app.use("Adonis/Src/Config");
       const Logger = this.app.use("Logger");
-      const EventStream = require("../libs/server-events-nodejs").EventStream;
+      const EventStream = require("./server-events-nodejs").EventStream;
 
       let Stream = require("../src/Stream/index.js");
       return new Stream(EventStream, Logger, Config);
@@ -41,7 +41,7 @@ class ServerSentEventsProvider extends ServiceProvider {
 
   _registerEventSource() {
     this.app.bind("Adonis/Src/EventSource", () => {
-      const Source = require("../libs/server-events-nodejs").Source;
+      const Source = require("./server-events-nodejs").Source;
       return new Source(require("uuid/v4"));
     });
 
