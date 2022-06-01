@@ -151,7 +151,10 @@ class EventStream {
         // browsers can disconnect at will despite the 'Connection: keep-alive'
         // so we trick the browser to expect more data by sending SSE comments
 
-        if (req.headers.connection !== "keep-alive") {
+        if (
+          options.force_keep_alive &&
+          req.headers.connection !== "keep-alive"
+        ) {
           var intervalId = setInterval(() => {
             res.write(`: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`);
           }, 1500);
